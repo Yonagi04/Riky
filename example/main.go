@@ -1,6 +1,6 @@
 package main
 
-import logger "github.com/Yonagi04/Riky/logger"
+import "github.com/Yonagi04/Riky/logger"
 
 func main() {
 	// ========================================
@@ -11,9 +11,9 @@ func main() {
 
 	// 派生用法 (Contextual logging)
 	subLogger := log.With(logger.String("request_id", "abc-123"))
-	subLogger.Info("processing request") // 自动带上 request_id
+	subLogger.Info("processing request")
 
-	log.Info("another log without request_id") // 不带 request_id
+	log.Info("another log without request_id")
 
 	// ========================================
 	// 示例 2: 动态级别 (AtomicLevel)

@@ -1,6 +1,9 @@
 package logger
 
-import "io"
+import (
+	"io"
+	"time"
+)
 
 type Core struct {
 	levelEnabler LevelEnabler
@@ -34,10 +37,11 @@ func (c *Core) Write(level Level, msg string, fields []Field) error {
 		return nil
 	}
 
+	now := time.Now()
 	buf := getBuffer()
 	defer putBuffer(buf)
 
-	c.encoder.Encode(buf, msg, level, fields)
+	c.encoder.Encode(buf, msg, level, now, fields)
 	_, err := c.out.Write(buf.bs)
 	return err
 }

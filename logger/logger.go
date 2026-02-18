@@ -10,13 +10,13 @@ type Logger struct {
 }
 
 func NewLogger() *Logger {
-	core := NewCore(os.Stdout, &jsonEncoder{}, InfoLevel)
+	core := NewCore(os.Stdout, NewEncoder(), InfoLevel)
 	return &Logger{core: core}
 }
 
 // NewLoggerWithAtomicLevel 创建带动态级别的 Logger
 func NewLoggerWithAtomicLevel(level *AtomicLevel) *Logger {
-	core := NewCoreWithEnabler(os.Stdout, &jsonEncoder{}, level)
+	core := NewCoreWithEnabler(os.Stdout, NewEncoder(), level)
 	return &Logger{core: core}
 }
 
