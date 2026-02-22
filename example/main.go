@@ -19,7 +19,7 @@ func main() {
 	// 示例 2: 动态级别 (AtomicLevel)
 	// ========================================
 	atomicLevel := logger.NewAtomicLevelAt(logger.DebugLevel)
-	dynamicLog := logger.NewLoggerWithAtomicLevel(&atomicLevel)
+	dynamicLog := logger.NewLoggerWithAtomicLevel(atomicLevel)
 
 	// 初始为 Debug 级别，所有日志都会输出
 	dynamicLog.Debug("debug message - will be printed")

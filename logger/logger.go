@@ -108,7 +108,7 @@ var defaultLogger atomic.Pointer[Logger]
 func init() {
 	// 初始化默认 Logger，使用 AtomicLevel 以支持动态级别
 	level := NewAtomicLevelAt(InfoLevel)
-	l := NewLoggerWithAtomicLevel(&level)
+	l := NewLoggerWithAtomicLevel(level)
 	defaultLogger.Store(l)
 }
 
