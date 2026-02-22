@@ -1,6 +1,7 @@
 package logger
 
 import (
+	"io"
 	"os"
 	"sync/atomic"
 )
@@ -11,6 +12,12 @@ type Logger struct {
 
 func NewLogger() *Logger {
 	core := NewCore(os.Stdout, NewEncoder(), InfoLevel)
+	return &Logger{core: core}
+}
+
+// NewLoggerWithWriter 创建使用自定义 io.Writer 的 Logger
+func NewLoggerWithWriter(w io.Writer) *Logger {
+	core := NewCore(w, NewEncoder(), InfoLevel)
 	return &Logger{core: core}
 }
 

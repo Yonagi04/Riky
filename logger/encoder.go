@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"math"
 	"strconv"
 	"time"
@@ -58,11 +57,8 @@ func (e *jsonEncoder) Encode(buf *Buffer, msg string, level Level, t time.Time, 
 	// Go 编译器会将 append 优化为高效的 memmove
 	buf.bs = append(buf.bs, e.buf...)
 
-	// 本次调用传入的临时字段
-	tempBuf := getBuffer()
-	defer putBuffer(tempBuf)
-	e.addFieldsToBuffer(tempBuf, fields)
-	buf.bs = append(buf.bs, tempBuf.bs...)
+	// 本次调用传入的临时字段（直接写入主 buffer，避免额外分配）
+	e.addFieldsToBuffer(buf, fields)
 
 	// 结束 JSON 对象
 	buf.AppendString("}\n")
@@ -152,13 +148,11 @@ func (e *jsonEncoder) addFieldsToBuffer(buf *Buffer, fields []Field) {
 		case DurationType:
 			buf.AppendInt(f.Integer)
 		case ErrorType:
-			if f.Interface != nil {
-				buf.AppendString(f.Interface.(error).Error())
-			}
-		case ReflectType:
-			if f.Interface != nil {
-				buf.AppendString(fmt.Sprintf("%+v", f.Interface))
-			}
+			buf.AppendByte('"')
+			e.safeAppendString(buf, f.String)
+			buf.AppendByte('"')
+		default:
+			panic("unhandled default case")
 		}
 	}
 }
@@ -224,13 +218,7 @@ func (e *jsonEncoder) AddFields(fields []Field) {
 		case DurationType:
 			e.buf = strconv.AppendInt(e.buf, f.Integer, 10)
 		case ErrorType:
-			if f.Interface != nil {
-				e.appendString(f.Interface.(error).Error())
-			}
-		case ReflectType:
-			if f.Interface != nil {
-				e.appendString(fmt.Sprintf("%+v", f.Interface))
-			}
+			e.appendString(f.String)
 		default:
 			panic("unhandled default case")
 		}

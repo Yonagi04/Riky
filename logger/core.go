@@ -39,10 +39,10 @@ func (c *Core) Write(level Level, msg string, fields []Field) error {
 
 	now := time.Now()
 	buf := getBuffer()
-	defer putBuffer(buf)
-
 	c.encoder.Encode(buf, msg, level, now, fields)
 	_, err := c.out.Write(buf.bs)
+
+	putBuffer(buf)
 	return err
 }
 

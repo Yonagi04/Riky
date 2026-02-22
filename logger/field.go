@@ -1,7 +1,6 @@
 package logger
 
 import (
-	"fmt"
 	"math"
 	"time"
 )
@@ -16,16 +15,14 @@ const (
 	TimeType
 	DurationType
 	ErrorType
-	ReflectType
 )
 
 type Field struct {
-	Key       string
-	Type      FieldType
-	Integer   int64
-	String    string
-	Float     uint64
-	Interface interface{}
+	Key     string
+	Type    FieldType
+	Integer int64
+	String  string
+	Float   uint64
 }
 
 func Int(key string, value int) Field {
@@ -85,26 +82,10 @@ func Duration(key string, value time.Duration) Field {
 func Error(key string, value error) Field {
 	if value != nil {
 		return Field{
-			Key:       key,
-			Type:      ErrorType,
-			Interface: value.Error(),
+			Key:    key,
+			Type:   ErrorType,
+			String: value.Error(),
 		}
 	}
 	return Field{}
-}
-
-func Object(key string, value interface{}) Field {
-	return Field{
-		Key:       key,
-		Type:      ReflectType,
-		Interface: value,
-	}
-}
-
-func Stringer(key string, value fmt.Stringer) Field {
-	return Field{
-		Key:       key,
-		Type:      ReflectType,
-		Interface: value,
-	}
 }
