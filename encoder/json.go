@@ -1,4 +1,4 @@
-package logger
+package encoder
 
 import (
 	"math"
@@ -9,19 +9,15 @@ import (
 // hexDigits 用于将字节转换为十六进制字符
 var hexDigits = [16]byte{'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'}
 
-// JSON 字段名常量
-// 集中管理，便于维护和修改，避免硬编码字符串分散在代码中
-const (
-	jsonFieldLevel = "level"
-	jsonFieldMsg   = "msg"
-	jsonFieldTime  = "time"
-)
-
-// Encoder 定义日志编码器接口
-type Encoder interface {
-	Encode(buf *Buffer, msg string, level Level, time time.Time, fields []Field)
-	Clone() Encoder
-	AddFields([]Field)
+// JSONFieldNames JSON 字段名常量
+var JSONFieldNames = struct {
+	Level string
+	Msg   string
+	Time  string
+}{
+	Level: "level",
+	Msg:   "msg",
+	Time:  "time",
 }
 
 // jsonEncoder JSON 格式的日志编码器
@@ -30,9 +26,9 @@ type jsonEncoder struct {
 	buf []byte
 }
 
-// NewEncoder 创建新的 JSON 编码器
+// NewJSONEncoder 创建新的 JSON 编码器
 // 预分配 buf 容量，避免后续 AddFields 时频繁扩容
-func NewEncoder() *jsonEncoder {
+func NewJSONEncoder() *jsonEncoder {
 	return &jsonEncoder{
 		buf: make([]byte, 0, 256),
 	}
@@ -40,22 +36,22 @@ func NewEncoder() *jsonEncoder {
 
 // Encode 将日志编码为 JSON 格式
 // 利用 Go 编译器优化：append(dst, src...) 会被优化为高效的 memmove
-func (e *jsonEncoder) Encode(buf *Buffer, msg string, level Level, t time.Time, fields []Field) {
+func (e *jsonEncoder) Encode(buf Buffer, msg string, level string, t time.Time, fields []Field) {
 	// 开始 JSON 对象
 	buf.AppendByte('{')
 
 	// level 字段（第一个字段，无前导逗号）
-	e.writeFirstStringField(buf, jsonFieldLevel, level.String())
+	e.writeFirstStringField(buf, JSONFieldNames.Level, level)
 
 	// msg 字段
-	e.writeStringField(buf, jsonFieldMsg, msg)
+	e.writeStringField(buf, JSONFieldNames.Msg, msg)
 
 	// time 字段
-	e.writeTimeField(buf, jsonFieldTime, t)
+	e.writeTimeField(buf, JSONFieldNames.Time, t)
 
 	// From With() 累积的持久化字段
 	// Go 编译器会将 append 优化为高效的 memmove
-	buf.bs = append(buf.bs, e.buf...)
+	buf.AppendBytes(e.buf)
 
 	// 本次调用传入的临时字段（直接写入主 buffer，避免额外分配）
 	e.addFieldsToBuffer(buf, fields)
@@ -65,7 +61,7 @@ func (e *jsonEncoder) Encode(buf *Buffer, msg string, level Level, t time.Time, 
 }
 
 // writeFirstStringField 写入第一个字符串字段（无前导逗号）
-func (e *jsonEncoder) writeFirstStringField(buf *Buffer, key, value string) {
+func (e *jsonEncoder) writeFirstStringField(buf Buffer, key, value string) {
 	buf.AppendByte('"')
 	buf.AppendString(key)
 	buf.AppendString("\":\"")
@@ -74,7 +70,7 @@ func (e *jsonEncoder) writeFirstStringField(buf *Buffer, key, value string) {
 }
 
 // writeStringField 写入字符串字段（带前导逗号）
-func (e *jsonEncoder) writeStringField(buf *Buffer, key, value string) {
+func (e *jsonEncoder) writeStringField(buf Buffer, key, value string) {
 	buf.AppendString(",\"")
 	buf.AppendString(key)
 	buf.AppendString("\":\"")
@@ -83,7 +79,7 @@ func (e *jsonEncoder) writeStringField(buf *Buffer, key, value string) {
 }
 
 // writeTimeField 写入时间字段
-func (e *jsonEncoder) writeTimeField(buf *Buffer, key string, t time.Time) {
+func (e *jsonEncoder) writeTimeField(buf Buffer, key string, t time.Time) {
 	buf.AppendString(",\"")
 	buf.AppendString(key)
 	buf.AppendString("\":\"")
@@ -125,7 +121,7 @@ func (e *jsonEncoder) writeTimeField(buf *Buffer, key string, t time.Time) {
 }
 
 // addFieldsToBuffer 将字段添加到指定的 buffer，不修改 encoder 内部状态
-func (e *jsonEncoder) addFieldsToBuffer(buf *Buffer, fields []Field) {
+func (e *jsonEncoder) addFieldsToBuffer(buf Buffer, fields []Field) {
 	for _, f := range fields {
 		e.addKeyToBuffer(buf, f.Key)
 		switch f.Type {
@@ -136,7 +132,7 @@ func (e *jsonEncoder) addFieldsToBuffer(buf *Buffer, fields []Field) {
 		case Int64Type:
 			buf.AppendInt(f.Integer)
 		case Float64Type:
-			buf.bs = strconv.AppendFloat(buf.bs, math.Float64frombits(f.Float), 'f', -1, 64)
+			buf.AppendFloat(math.Float64frombits(f.Float), 'f', -1, 64)
 		case BoolType:
 			if f.Integer == 1 {
 				buf.AppendString("true")
@@ -151,21 +147,19 @@ func (e *jsonEncoder) addFieldsToBuffer(buf *Buffer, fields []Field) {
 			buf.AppendByte('"')
 			e.safeAppendString(buf, f.String)
 			buf.AppendByte('"')
-		default:
-			panic("unhandled default case")
 		}
 	}
 }
 
 // addKeyToBuffer 向 buffer 添加 JSON 键名
-func (e *jsonEncoder) addKeyToBuffer(buf *Buffer, key string) {
+func (e *jsonEncoder) addKeyToBuffer(buf Buffer, key string) {
 	buf.AppendString(",\"")
 	buf.AppendString(key)
 	buf.AppendString("\":")
 }
 
 // safeAppendString 安全地追加字符串，处理 JSON 特殊字符转义
-func (e *jsonEncoder) safeAppendString(buf *Buffer, s string) {
+func (e *jsonEncoder) safeAppendString(buf Buffer, s string) {
 	for i := 0; i < len(s); i++ {
 		c := s[i]
 		switch c {
@@ -219,8 +213,6 @@ func (e *jsonEncoder) AddFields(fields []Field) {
 			e.buf = strconv.AppendInt(e.buf, f.Integer, 10)
 		case ErrorType:
 			e.appendString(f.String)
-		default:
-			panic("unhandled default case")
 		}
 	}
 }
