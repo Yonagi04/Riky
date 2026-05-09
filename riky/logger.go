@@ -1,11 +1,9 @@
-package logger
+package riky
 
 import (
 	"io"
 	"os"
 	"sync/atomic"
-
-	"github.com/Yonagi04/Riky/encoder"
 )
 
 type Logger struct {
@@ -13,19 +11,19 @@ type Logger struct {
 }
 
 func NewLogger() *Logger {
-	core := NewCore(os.Stdout, encoder.NewJSONEncoder(), InfoLevel)
+	core := NewCore(os.Stdout, NewJSONEncoder(), InfoLevel)
 	return &Logger{core: core}
 }
 
 // NewLoggerWithWriter 创建使用自定义 io.Writer 的 Logger
 func NewLoggerWithWriter(w io.Writer) *Logger {
-	core := NewCore(w, encoder.NewJSONEncoder(), InfoLevel)
+	core := NewCore(w, NewJSONEncoder(), InfoLevel)
 	return &Logger{core: core}
 }
 
 // NewLoggerWithAtomicLevel 创建带动态级别的 Logger
 func NewLoggerWithAtomicLevel(level *AtomicLevel) *Logger {
-	core := NewCoreWithEnabler(os.Stdout, encoder.NewJSONEncoder(), level)
+	core := NewCoreWithEnabler(os.Stdout, NewJSONEncoder(), level)
 	return &Logger{core: core}
 }
 

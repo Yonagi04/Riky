@@ -1,18 +1,36 @@
-package logger
+package riky
 
 import (
 	"math"
 	"time"
-
-	"github.com/Yonagi04/Riky/encoder"
 )
 
-type Field = encoder.Field
+// FieldType 表示字段类型
+type FieldType int
+
+const (
+	Int64Type FieldType = iota
+	StringType
+	BoolType
+	Float64Type
+	TimeType
+	DurationType
+	ErrorType
+)
+
+// Field 表示一个日志字段
+type Field struct {
+	Key     string
+	Type    FieldType
+	Integer int64
+	String  string
+	Float   uint64
+}
 
 func Int(key string, value int) Field {
 	return Field{
 		Key:     key,
-		Type:    encoder.Int64Type,
+		Type:    Int64Type,
 		Integer: int64(value),
 	}
 }
@@ -20,7 +38,7 @@ func Int(key string, value int) Field {
 func String(key string, value string) Field {
 	return Field{
 		Key:    key,
-		Type:   encoder.StringType,
+		Type:   StringType,
 		String: value,
 	}
 }
@@ -28,7 +46,7 @@ func String(key string, value string) Field {
 func Float(key string, value float64) Field {
 	return Field{
 		Key:   key,
-		Type:  encoder.Float64Type,
+		Type:  Float64Type,
 		Float: math.Float64bits(value),
 	}
 }
@@ -40,7 +58,7 @@ func Bool(key string, value bool) Field {
 	}
 	return Field{
 		Key:     key,
-		Type:    encoder.BoolType,
+		Type:    BoolType,
 		Integer: intValue,
 	}
 }
@@ -48,7 +66,7 @@ func Bool(key string, value bool) Field {
 func Time(key string, value time.Time) Field {
 	return Field{
 		Key:     key,
-		Type:    encoder.TimeType,
+		Type:    TimeType,
 		Integer: value.UnixNano(),
 	}
 }
@@ -56,7 +74,7 @@ func Time(key string, value time.Time) Field {
 func Duration(key string, value time.Duration) Field {
 	return Field{
 		Key:     key,
-		Type:    encoder.DurationType,
+		Type:    DurationType,
 		Integer: value.Nanoseconds(),
 	}
 }
@@ -65,7 +83,7 @@ func Error(key string, value error) Field {
 	if value != nil {
 		return Field{
 			Key:    key,
-			Type:   encoder.ErrorType,
+			Type:   ErrorType,
 			String: value.Error(),
 		}
 	}

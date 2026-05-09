@@ -1,4 +1,4 @@
-package encoder
+package riky
 
 import (
 	"math"
@@ -35,6 +35,10 @@ func (b *mockBuffer) AppendInt(i int64) {
 
 func (b *mockBuffer) AppendFloat(f float64, fmt byte, prec, bitSize int) {
 	b.sb.WriteString(float64ToString(f, fmt, prec))
+}
+
+func (b *mockBuffer) Reset() {
+	b.sb.Reset()
 }
 
 func int64ToString(i int64) string {

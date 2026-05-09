@@ -1,4 +1,4 @@
-package encoder
+package riky
 
 import (
 	"math"
@@ -36,6 +36,10 @@ func (b *testBuffer) AppendInt(i int64) {
 
 func (b *testBuffer) AppendFloat(f float64, fmt byte, prec, bitSize int) {
 	b.data = append(b.data, []byte(floatToString(f, prec))...)
+}
+
+func (b *testBuffer) Reset() {
+	b.data = b.data[:0]
 }
 
 func intToString(i int64) string {

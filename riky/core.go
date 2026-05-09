@@ -1,19 +1,17 @@
-package logger
+package riky
 
 import (
 	"io"
 	"time"
-
-	"github.com/Yonagi04/Riky/encoder"
 )
 
 type Core struct {
 	levelEnabler LevelEnabler
-	encoder      encoder.Encoder
+	encoder      Encoder
 	out          io.Writer
 }
 
-func NewCore(out io.Writer, enc encoder.Encoder, level Level) *Core {
+func NewCore(out io.Writer, enc Encoder, level Level) *Core {
 	return &Core{
 		out:          out,
 		encoder:      enc,
@@ -22,7 +20,7 @@ func NewCore(out io.Writer, enc encoder.Encoder, level Level) *Core {
 }
 
 // NewCoreWithEnabler 使用 LevelEnabler 创建 Core
-func NewCoreWithEnabler(out io.Writer, enc encoder.Encoder, enabler LevelEnabler) *Core {
+func NewCoreWithEnabler(out io.Writer, enc Encoder, enabler LevelEnabler) *Core {
 	return &Core{
 		out:          out,
 		encoder:      enc,
@@ -40,11 +38,11 @@ func (c *Core) Write(level Level, msg string, fields []Field) error {
 	}
 
 	now := time.Now()
-	buf := getBuffer()
+	buf := GetBuffer()
 	c.encoder.Encode(buf, msg, level.String(), now, fields)
 	_, err := c.out.Write(buf.Bytes())
 
-	putBuffer(buf)
+	PutBuffer(buf)
 	return err
 }
 

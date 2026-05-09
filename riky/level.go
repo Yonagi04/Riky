@@ -1,4 +1,4 @@
-package logger
+package riky
 
 import (
 	"fmt"
