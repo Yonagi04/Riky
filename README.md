@@ -40,9 +40,9 @@ func main() {
     dynamicLog.Info("this will be filtered")
 
     // 全局 Logger
-    logger.Info("global logger message")
-    logger.SetLevel(logger.DebugLevel)
-    logger.Debug("global debug")
+	logger.Info("global logger message")
+	logger.SetLevel(logger.DebugLevel)
+	logger.Debug("global debug")
 }
 ```
 
@@ -106,23 +106,6 @@ level.SetLevel(logger.InfoLevel)
 // 或通过 Logger
 log.SetLevel(logger.WarnLevel)
 currentLevel := log.Level()
-```
-
-## 项目结构
-
-```
-Riky/
-├── logger/           # 主包
-│   ├── logger.go    # 用户 API
-│   ├── core.go    # 核心逻辑
-│   ├── level.go   # 日志级别
-│   ├── field.go   # 强类型字段
-│   ├── buffer.go # Buffer 池化
-│   └── atomic_level.go # 动态级别
-├── encoder/         # 编码器
-│   ├── encoder.go # 接口定义
-│   └── json.go    # JSON 实现
-└── example/       # 使用示例
 ```
 
 ## 性能

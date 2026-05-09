@@ -1,4 +1,4 @@
-package riky
+package logger
 
 import (
 	"strconv"
