@@ -10,13 +10,13 @@ type AtomicLevel struct {
 }
 
 // NewAtomicLevel 创建默认级别为 InfoLevel 的 AtomicLevel
-func NewAtomicLevel() AtomicLevel {
-	return AtomicLevel{l: atomic.Int32{}}
+func NewAtomicLevel() *AtomicLevel {
+	return &AtomicLevel{l: atomic.Int32{}}
 }
 
 // NewAtomicLevelAt 创建指定级别的 AtomicLevel
-func NewAtomicLevelAt(l Level) AtomicLevel {
-	a := AtomicLevel{l: atomic.Int32{}}
+func NewAtomicLevelAt(l Level) *AtomicLevel {
+	a := &AtomicLevel{l: atomic.Int32{}}
 	a.l.Store(int32(l))
 	return a
 }

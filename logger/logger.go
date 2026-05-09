@@ -4,6 +4,8 @@ import (
 	"io"
 	"os"
 	"sync/atomic"
+
+	"github.com/Yonagi04/Riky/encoder"
 )
 
 type Logger struct {
@@ -11,19 +13,19 @@ type Logger struct {
 }
 
 func NewLogger() *Logger {
-	core := NewCore(os.Stdout, NewEncoder(), InfoLevel)
+	core := NewCore(os.Stdout, encoder.NewJSONEncoder(), InfoLevel)
 	return &Logger{core: core}
 }
 
 // NewLoggerWithWriter 创建使用自定义 io.Writer 的 Logger
 func NewLoggerWithWriter(w io.Writer) *Logger {
-	core := NewCore(w, NewEncoder(), InfoLevel)
+	core := NewCore(w, encoder.NewJSONEncoder(), InfoLevel)
 	return &Logger{core: core}
 }
 
 // NewLoggerWithAtomicLevel 创建带动态级别的 Logger
 func NewLoggerWithAtomicLevel(level *AtomicLevel) *Logger {
-	core := NewCoreWithEnabler(os.Stdout, NewEncoder(), level)
+	core := NewCoreWithEnabler(os.Stdout, encoder.NewJSONEncoder(), level)
 	return &Logger{core: core}
 }
 
@@ -106,7 +108,7 @@ var defaultLogger atomic.Pointer[Logger]
 func init() {
 	// 初始化默认 Logger，使用 AtomicLevel 以支持动态级别
 	level := NewAtomicLevelAt(InfoLevel)
-	l := NewLoggerWithAtomicLevel(&level)
+	l := NewLoggerWithAtomicLevel(level)
 	defaultLogger.Store(l)
 }
 
